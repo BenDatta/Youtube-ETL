@@ -18,7 +18,10 @@ file_path = folder_path / f"youtube_data_{date.today()}.json"
 def get_channel_id():
 
     try:
-        youtube_url = f"https://youtube.googleapis.com/youtube/v3/channels?part=contentDetails&forHandle={channel_handle}&key={API_KEY}"
+        youtube_url = (
+            f"https://youtube.googleapis.com/youtube/v3/channels?"
+            f"part=contentDetails&forHandle={channel_handle}&key={API_KEY}"
+        )
 
         response = requests.get(youtube_url)
 
