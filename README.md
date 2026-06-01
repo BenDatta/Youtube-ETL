@@ -38,7 +38,17 @@ flowchart LR
 
 ## Tech stack
 
-Python 3.12 · Apache Airflow 3 (Celery, Redis) · PostgreSQL · YouTube Data API v3 · Soda Core · Docker / Compose · Docker Hub · **pytest** · **GitHub Actions**
+| Layer | Technology |
+|-------|------------|
+| Language | ![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=flat-square&logo=python&logoColor=white) |
+| Orchestration | ![Airflow](https://img.shields.io/badge/Apache_Airflow-3.0-017CEE?style=flat-square&logo=apacheairflow&logoColor=white) |
+| Executor / broker | ![Celery](https://img.shields.io/badge/Celery-Executor-37814A?style=flat-square&logo=celery&logoColor=white) ![Redis](https://img.shields.io/badge/Redis-7.2-DC382D?style=flat-square&logo=redis&logoColor=white) |
+| Database | ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=flat-square&logo=postgresql&logoColor=white) |
+| Data source | ![YouTube API](https://img.shields.io/badge/YouTube_Data_API-v3-FF0000?style=flat-square&logo=youtube&logoColor=white) |
+| Data quality | ![Soda](https://img.shields.io/badge/Soda_Core-Postgres-00B4D8?style=flat-square) |
+| Containers | ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=flat-square&logo=docker&logoColor=white) ![Docker Hub](https://img.shields.io/badge/Docker_Hub-Image-2496ED?style=flat-square&logo=docker&logoColor=white) |
+| Testing | ![pytest](https://img.shields.io/badge/pytest-unit%20%2B%20integration-0A9EDC?style=flat-square&logo=pytest&logoColor=white) |
+| CI/CD | ![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-CI%2FCD-2088FF?style=flat-square&logo=githubactions&logoColor=white) |
 
 ---
 
