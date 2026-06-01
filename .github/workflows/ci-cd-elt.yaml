@@ -87,11 +87,16 @@ jobs:
       DOCKERHUB_NAMESPACE: ${{ vars.DOCKERHUB_NAMESPACE }}
       DOCKERHUB_REPOSITORY: ${{ vars.DOCKERHUB_REPOSITORY }}
       DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USERNAME }}
-      IMAGE_TAG: ${{ needs.build-and-push-image.result == 'success' && github.sha || 'latest' }}
+      IMAGE_TAG: ci-${{ github.sha }}
     steps:
       - uses: actions/checkout@v4
+      - name: Build image for CI
+        run: |
+          docker build \
+            -t ${{ vars.DOCKERHUB_NAMESPACE }}/${{ vars.DOCKERHUB_REPOSITORY }}:ci-${{ github.sha }} \
+            .
       - name: Set up Docker Compose
-        run: docker compose --profile ci pull && docker compose --profile ci up -d --wait
+        run: docker compose --profile ci up -d --wait
       - name: Run Unit and Integration Tests
         run: docker exec -t airflow-worker sh -c "pytest tests/ -v"
       - name: Run End-to-End DAG Tests
