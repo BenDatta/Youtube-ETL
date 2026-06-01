@@ -3,7 +3,6 @@ import logging
 logger = logging.getLogger(__name__)
 table = "youtube_elt"
 
-
 def insert_rows(cur, conn, schema, row):
 
     try:
@@ -37,11 +36,9 @@ def insert_rows(cur, conn, schema, row):
         logger.error(f"Error inserting row with Video_ID: {row[video_id]}")
         raise e
 
-
 def update_rows(cur, conn, schema, row):
 
     try:
-        # staging
         if schema == "staging":
             video_id = "video_id"
             upload_date = "published_at"
@@ -49,7 +46,6 @@ def update_rows(cur, conn, schema, row):
             video_views = "view_count"
             likes_count = "like_count"
             comments_count = "comment_count"
-        # core
         else:
             video_id = "Video_ID"
             upload_date = "Upload_Date"
@@ -77,7 +73,6 @@ def update_rows(cur, conn, schema, row):
     except Exception as e:
         logger.error(f"Error updating row with Video_ID: {row[video_id]} - {e}")
         raise e
-
 
 def delete_rows(cur, conn, schema, ids_to_delete):
 

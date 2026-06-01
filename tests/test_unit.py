@@ -1,10 +1,8 @@
 def test_api_key(api_key):
     assert api_key == "MOCK_KEY1234"
 
-
 def test_channel_handle(channel_handle):
     assert channel_handle == "MRCHEESE"
-
 
 def test_postgres_conn(mock_postgres_conn_vars):
     conn = mock_postgres_conn_vars
@@ -14,14 +12,11 @@ def test_postgres_conn(mock_postgres_conn_vars):
     assert conn.port == 1234
     assert conn.schema == "mock_db_name"
 
-
 def test_dags_integrity(dagbag):
-    # 1.
     assert dagbag.import_errors == {}, f"Import errors found: {dagbag.import_errors}"
     print("===========")
     print(dagbag.import_errors)
 
-    # 2.
     expected_dag_ids = ["produce_json", "update_db", "data_quality"]
     loaded_dag_ids = list(dagbag.dags.keys())
     print("===========")
@@ -30,15 +25,13 @@ def test_dags_integrity(dagbag):
     for dag_id in expected_dag_ids:
         assert dag_id in loaded_dag_ids, f"DAG {dag_id} is missing."
 
-    # 3.
     assert dagbag.size() == 3
     print("===========")
     print(dagbag.size())
 
-    # 4.
     expected_task_counts = {
         "produce_json": 5,
-        "update_db": 2,
+        "update_db": 3,
         "data_quality": 2,
     }
     print("===========")

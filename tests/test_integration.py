@@ -2,7 +2,6 @@ import requests
 import pytest
 import psycopg2
 
-
 def test_youtube_api_response(airflow_variable):
     api_key = airflow_variable("api_key")
     channel_handle = airflow_variable("channel_handle")
@@ -14,7 +13,6 @@ def test_youtube_api_response(airflow_variable):
         assert response.status_code == 200
     except requests.RequestException as e:
         pytest.fail(f"Request to YouTube API failed: {e}")
-
 
 def test_real_postgres_connection(real_postgres_connection):
     cursor = None

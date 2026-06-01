@@ -15,7 +15,6 @@ from airflow.decorators import task
 logger = logging.getLogger(__name__)
 table = "youtube_elt"
 
-
 @task
 def staging_table():
 
@@ -59,7 +58,6 @@ def staging_table():
     finally:
         if conn and cur:
             close_conn_cursor(conn, cur)
-
 
 @task
 def core_table():
@@ -105,11 +103,9 @@ def core_table():
         logger.info(f"{schema} table update completed")
 
     except Exception as e:
-        # Log any exceptions that occur
         logger.error(f"An error occurred during the update of {schema} table: {e}")
         raise e
 
     finally:
-        # Ensure the connection and cursor are closed
         if conn and cur:
             close_conn_cursor(conn, cur)
