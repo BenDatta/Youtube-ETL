@@ -1,88 +1,95 @@
 # YouTube Data ETL Pipeline
 
-[![Python Version](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/)
+[![Python](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-An automated data engineering pipeline that extracts YouTube channel video statistics, loads them into PostgreSQL using a **staging → core** warehouse pattern, validates data quality with **Soda**, and orchestrates the full workflow with **Apache Airflow** in Docker—with **GitHub Actions** for CI/CD.
+ELT pipeline for YouTube channel video stats: **API → JSON → PostgreSQL (staging → core) → Soda**, orchestrated with **Apache Airflow** in Docker. Includes **pytest** coverage and a **GitHub Actions** CI/CD workflow.
 
 ---
 
-## Project overview
+## Overview
 
-This project implements an end-to-end **ELT** pipeline for a configurable YouTube channel (via `CHANNEL_HANDLE`). It removes manual API and database work by:
+Configurable channel handle → daily extract from **YouTube Data API v3** → load/upsert **staging** → transform **core** → **Soda** quality checks on both schemas.
 
-1. **Extracting** video metadata and engagement metrics from the **YouTube Data API v3** (playlist → video IDs → video statistics).
-2. **Loading** a daily JSON snapshot, then upserting into a **staging** schema in PostgreSQL.
-3. **Transforming** records into a **core** schema (business rules such as video type and normalized duration).
-4. **Validating** both layers with **Soda** (missing/duplicate keys, sanity checks on metrics).
-
-Three Airflow DAGs run in sequence via `TriggerDagRunOperator`: `produce_json` → `update_db` → `data_quality`. The first DAG is scheduled daily; the others are triggered when the previous stage completes.
-
----
-
-## Architecture
-
-| Stage | What happens |
-|-------|----------------|
-| **Extract** | Airflow TaskFlow tasks call the YouTube Data API and write `youtube_data_YYYY-MM-DD.json` under `/opt/airflow/data`. |
-| **Load** | Python tasks read JSON, create schemas/tables if needed, and upsert into `staging.youtube_elt` by `Video_ID`. |
-| **Transform** | Core tasks read staging, apply transformations, and load `core.youtube_elt`. |
-| **Quality** | Soda scans `staging` and `core` using checks defined in `include/soda/checks.yml`. |
+Three DAGs, chained with `TriggerDagRunOperator`: **`produce_json`** (daily) → **`update_db`** → **`data_quality`**.
 
 ```mermaid
 flowchart LR
-  API[YouTube API] --> JSON[JSON file]
-  JSON --> STG[(staging)]
-  STG --> CORE[(core)]
-  STG --> SODA[Soda checks]
-  CORE --> SODA
+  A["① Extract<br/>YouTube API"] --> B["② JSON"]
+  B --> C["③ staging"]
+  C --> D["④ core"]
+  C --> E["⑤ Soda"]
+  D --> E
 
-  classDef api fill:#81D4FA,stroke:#0277BD,color:#000
-  classDef file fill:#FFF59D,stroke:#F9A825,color:#000
-  classDef db fill:#CE93D8,stroke:#7B1FA2,color:#000
-  classDef qa fill:#FFAB91,stroke:#E64A19,color:#000
-
-  class API api
-  class JSON file
-  class STG,CORE db
-  class SODA qa
+  style A fill:#4FC3F7,stroke:#0277BD,stroke-width:2px,color:#000
+  style B fill:#FFF176,stroke:#F9A825,stroke-width:2px,color:#000
+  style C fill:#CE93D8,stroke:#6A1B9A,stroke-width:2px,color:#000
+  style D fill:#B39DDB,stroke:#4527A0,stroke-width:2px,color:#000
+  style E fill:#FF8A65,stroke:#D84315,stroke-width:2px,color:#000
 ```
 
-| DAG | Schedule | Role |
-|-----|----------|------|
-| `produce_json` | Daily (`@daily`) | API extract → JSON → trigger warehouse DAG |
-| `update_db` | Triggered | Staging load → core transform → trigger quality DAG |
-| `data_quality` | Triggered | Soda on `staging`, then `core` |
+| DAG | Role |
+|-----|------|
+| `produce_json` | API → daily JSON file |
+| `update_db` | Staging upsert → core transform |
+| `data_quality` | Soda on `staging`, then `core` |
 
 ---
 
 ## Tech stack
 
-| Area | Technology |
-|------|------------|
-| **Language** | Python 3.12 |
-| **Orchestration** | Apache Airflow 3.0 (CeleryExecutor, TaskFlow, `TriggerDagRunOperator`) |
-| **Data source** | YouTube Data API v3 |
-| **Database** | PostgreSQL (`staging`, `core`, Airflow metadata, Celery result backend) |
-| **Broker** | Redis |
-| **Data quality** | Soda Core (Postgres) |
-| **Runtime** | Docker, Docker Compose, custom image on Docker Hub |
-| **CI/CD** | GitHub Actions (image build/push, pytest, `airflow dags test`) |
-| **Testing** | pytest (unit + integration) |
+Python 3.12 · Apache Airflow 3 (Celery, Redis) · PostgreSQL · YouTube Data API v3 · Soda Core · Docker / Compose · Docker Hub · **pytest** · **GitHub Actions**
 
 ---
 
-## Repository layout
+## Testing
 
+| Layer | What runs |
+|-------|-----------|
+| **Unit** | DAG import integrity, mocked Airflow variables and Postgres connection (`tests/test_unit.py`) |
+| **Integration** | Live YouTube API response and Postgres `SELECT 1` (`tests/test_integration.py`) |
+
+Tests run locally with `pytest tests/ -v` or inside the Airflow worker container after `docker compose up`.
+
+---
+
+## CI/CD
+
+Workflow: [`.github/workflows/ci-cd-elt.yaml`](.github/workflows/ci-cd-elt.yaml)
+
+```mermaid
+flowchart LR
+  P[Push / PR] --> B[Build image]
+  B --> H[Push Docker Hub]
+  P --> T[Test job]
+  T --> D[docker compose --profile ci]
+  D --> PY[pytest]
+  D --> E2E[airflow dags test]
+
+  style P fill:#E3F2FD,stroke:#1565C0,color:#000
+  style B fill:#C8E6C9,stroke:#2E7D32,color:#000
+  style H fill:#C8E6C9,stroke:#2E7D32,color:#000
+  style T fill:#FFF9C4,stroke:#F9A825,color:#000
+  style D fill:#FFE0B2,stroke:#EF6C00,color:#000
+  style PY fill:#F8BBD0,stroke:#C2185B,color:#000
+  style E2E fill:#F8BBD0,stroke:#C2185B,color:#000
 ```
-dags/                 DAGs: API extract, warehouse, Soda quality
-include/soda/         Soda datasource config and checks
-tests/                Unit and integration tests
-Dockerfile            Custom Airflow image (constraints-based deps)
-docker-compose.yaml   Airflow Celery stack (+ `ci` Postgres profile)
-.github/workflows/    CI/CD pipeline
-```
+
+| Job | Purpose |
+|-----|---------|
+| **build-and-push-image** | Build custom Airflow image; push `:latest` and `:$SHA` to Docker Hub |
+| **unit-and-integration-and-e2e-tests** | Build image on runner, start stack with CI Postgres, run **pytest** and **`airflow dags test`** on all three DAGs |
+
+Path filters skip jobs when unrelated files change. Secrets and variables in GitHub mirror `.env` (API key, DB credentials, Fernet key, Docker Hub).
+
+---
+
+## Repository
+
+`dags/` · `include/soda/` · `tests/` · `Dockerfile` · `docker-compose.yaml` · `.github/workflows/`
 
 ---
 
 ## License
+
+MIT · YouTube API use subject to [Google’s terms](https://developers.google.com/youtube/terms/api-services-terms-of-service).
