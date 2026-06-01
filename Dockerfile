@@ -8,4 +8,6 @@ ENV PATH="/home/airflow/.local/bin:${PATH}"
 
 COPY requirements.txt /
 
-RUN pip install --no-cache-dir -r /requirements.txt
+RUN pip install --no-cache-dir \
+  --constraint "https://raw.githubusercontent.com/apache/airflow/constraints-${AIRFLOW_VERSION}/constraints-${PYTHON_VERSION}.txt" \
+  -r /requirements.txt
