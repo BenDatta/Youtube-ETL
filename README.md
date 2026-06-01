@@ -72,36 +72,6 @@ flowchart LR
 
 ---
 
-## Getting started
-
-### Prerequisites
-
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
-- PostgreSQL (local instance, e.g. via pgAdmin) with databases: `YoutubeDB`, `airflow_metadata`, `airflow_celery`
-- [YouTube Data API v3](https://console.cloud.google.com/apis/credentials) key
-
-### 1. Clone the repository
-
-```bash
-git clone https://github.com/BenDatta/Youtube-ETL.git
-cd Youtube-ETL
-```
-
-### 2. Configure environment
-
-Create a `.env` file in the project root (see variables used in `docker-compose.yaml`: API key, channel handle, Postgres connection, Fernet key, Docker image tags). Do not commit `.env`.
-
-### 3. Build and run
-
-```bash
-docker build -t benofurhie/youtube_data_elt:1.0.1 .
-docker compose up -d
-```
-
-Airflow UI: [http://localhost:8081](http://localhost:8081)
-
----
-
 ## Repository layout
 
 ```
@@ -116,5 +86,3 @@ docker-compose.yaml   Airflow Celery stack (+ `ci` Postgres profile)
 ---
 
 ## License
-
-This project is licensed under the MIT License. Use of the YouTube API is subject to [Google’s API Terms of Service](https://developers.google.com/youtube/terms/api-services-terms-of-service).
