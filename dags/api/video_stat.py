@@ -1,21 +1,21 @@
-import requests
-import os
-from dotenv import load_dotenv
 import json
 from datetime import date
 from pathlib import Path
 
+import requests
+from airflow.decorators import task
+from airflow.models import Variable
 
-load_dotenv()
+
 maxResult = 50
-channel_handle = "MrBeast"
-API_KEY = os.getenv("YOUTUBE_API_KEY")
+channel_handle = Variable.get("CHANNEL_HANDLE")
+API_KEY = Variable.get("YOUTUBE_API_KEY")
 
-folder_path = Path(__file__).parent / "data"
-file_path = folder_path / f"youtube_data_{date.today()}.json"
+file_path = Path("/opt/airflow/data") / f"youtube_data_{date.today()}.json"
 
 
-def get_channel_id():
+@task
+def get_playlist_id():
 
     try:
         youtube_url = (
@@ -40,6 +40,7 @@ def get_channel_id():
         raise e
 
 
+@task
 def get_video_ids(playlist_id):
     video_ids = []
     page_token = None
@@ -72,6 +73,7 @@ def get_video_ids(playlist_id):
         raise e
 
 
+@task
 def extracted_video_data(video_ids):
 
     extracted_data = []
@@ -119,13 +121,15 @@ def extracted_video_data(video_ids):
         raise e
 
 
+@task
 def save_to_json(extracted_data):
+    file_path.parent.mkdir(parents=True, exist_ok=True)
     with open(file_path, "w", encoding="utf-8") as f:
         json.dump(extracted_data, f, ensure_ascii=False, indent=4)
 
 
 if __name__ == "__main__":
-    playlist_id = get_channel_id()
+    playlist_id = get_playlist_id()
     video_ids = get_video_ids(playlist_id)
     video_data = extracted_video_data(video_ids)
     save_to_json(video_data)

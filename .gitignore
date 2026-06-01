@@ -1,4 +1,6 @@
 youtube-venv/
+.pytest_airflow/
+.pytest_cache/
 __pycache__/
 .env
 logs/
