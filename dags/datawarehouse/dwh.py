@@ -15,6 +15,7 @@ from airflow.decorators import task
 logger = logging.getLogger(__name__)
 table = "youtube_elt"
 
+
 @task
 def staging_table():
 
@@ -58,6 +59,7 @@ def staging_table():
     finally:
         if conn and cur:
             close_conn_cursor(conn, cur)
+
 
 @task
 def core_table():

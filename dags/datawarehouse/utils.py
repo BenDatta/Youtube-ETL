@@ -3,15 +3,18 @@ from psycopg2.extras import RealDictCursor
 
 table = "youtube_elt"
 
+
 def get_conn_cursor():
     hook = PostgresHook(postgres_conn_id="POSTGRES_DB_YT_ELT")
     conn = hook.get_conn()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     return conn, cur
 
+
 def close_conn_cursor(conn, cur):
     cur.close()
     conn.close()
+
 
 def create_schema(schema):
 
@@ -24,6 +27,7 @@ def create_schema(schema):
     conn.commit()
 
     close_conn_cursor(conn, cur)
+
 
 def create_table(schema):
 
@@ -60,6 +64,7 @@ def create_table(schema):
     conn.commit()
 
     close_conn_cursor(conn, cur)
+
 
 def get_video_ids(cur, schema):
 

@@ -3,6 +3,7 @@ import logging
 logger = logging.getLogger(__name__)
 table = "youtube_elt"
 
+
 def insert_rows(cur, conn, schema, row):
 
     try:
@@ -35,6 +36,7 @@ def insert_rows(cur, conn, schema, row):
     except Exception as e:
         logger.error(f"Error inserting row with Video_ID: {row[video_id]}")
         raise e
+
 
 def update_rows(cur, conn, schema, row):
 
@@ -73,6 +75,7 @@ def update_rows(cur, conn, schema, row):
     except Exception as e:
         logger.error(f"Error updating row with Video_ID: {row[video_id]} - {e}")
         raise e
+
 
 def delete_rows(cur, conn, schema, ids_to_delete):
 

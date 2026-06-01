@@ -1,5 +1,6 @@
 from datetime import timedelta, datetime
 
+
 def parse_duration(duration_str):
 
     duration_str = duration_str.replace("P", "").replace("T", "")
@@ -17,6 +18,7 @@ def parse_duration(duration_str):
     )
 
     return total_duration
+
 
 def transform_data(row):
 

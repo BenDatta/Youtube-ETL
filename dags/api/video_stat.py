@@ -12,6 +12,7 @@ API_KEY = Variable.get("YOUTUBE_API_KEY")
 
 file_path = Path("/opt/airflow/data") / f"youtube_data_{date.today()}.json"
 
+
 @task
 def get_playlist_id():
 
@@ -36,6 +37,7 @@ def get_playlist_id():
         return playlist_id
     except requests.exceptions.RequestException as e:
         raise e
+
 
 @task
 def get_video_ids(playlist_id):
@@ -68,6 +70,7 @@ def get_video_ids(playlist_id):
 
     except requests.exceptions.RequestException as e:
         raise e
+
 
 @task
 def extracted_video_data(video_ids):
@@ -116,11 +119,13 @@ def extracted_video_data(video_ids):
     except requests.exceptions.RequestException as e:
         raise e
 
+
 @task
 def save_to_json(extracted_data):
     file_path.parent.mkdir(parents=True, exist_ok=True)
     with open(file_path, "w", encoding="utf-8") as f:
         json.dump(extracted_data, f, ensure_ascii=False, indent=4)
+
 
 if __name__ == "__main__":
     playlist_id = get_playlist_id()

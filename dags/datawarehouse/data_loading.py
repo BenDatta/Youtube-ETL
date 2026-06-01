@@ -4,6 +4,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 def load_data():
 
     file_path = f"/opt/airflow/data/youtube_data_{date.today()}.json"
