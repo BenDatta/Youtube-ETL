@@ -75,6 +75,7 @@ x-airflow-common:
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
     # Set to false to remove default DAGs - https://stackoverflow.com/questions/43410836/how-to-remove-default-example-dags-in-airflow
     AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+    PYTHONPATH: /opt/airflow/dags
     # Enable health checks for the scheduler
     AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: 'true'
     # Setting Airflow Connections and Variables
