@@ -19,52 +19,25 @@ The pipeline targets a single channel (configured via Airflow variable `CHANNEL_
 
 ---
 
-## Architecture
+## Data flow
 
-The diagram below shows **how Airflow orchestrates the pipeline** (top) and **how data moves** (bottom to top through storage).
+Apache Airflow runs three DAGs (`produce_json` → `update_db` → `data_quality`) that map to the stages below.
 
 ```mermaid
-flowchart TB
-  API["YouTube Data API v3"]
+flowchart LR
+  ING["Ingestion<br/>YouTube API → JSON"] --> LOAD["Load<br/>JSON → staging"]
+  LOAD --> TFM["Transform<br/>staging → core"]
 
-  subgraph ORCH["Apache Airflow · CeleryExecutor"]
-    direction LR
-    D1["produce_json<br/><i>daily @schedule</i>"]
-    D2["update_db<br/><i>triggered</i>"]
-    D3["data_quality<br/><i>triggered</i>"]
-    D1 -->|"TriggerDagRun"| D2
-    D2 -->|"TriggerDagRun"| D3
-  end
-
-  JSON[("Daily JSON<br/>youtube_data_*.json")]
-  STG[("staging.youtube_elt")]
-  CORE[("core.youtube_elt")]
-  QA["Soda scans"]
-
-  API -->|"TaskFlow extract"| D1
-  D1 -->|"save_to_json"| JSON
-  JSON -->|"staging_table"| STG
-  STG -->|"core_table"| CORE
-  D3 --> QA
-  STG -.-> QA
-  CORE -.-> QA
-
-  style ORCH fill:#E3F2FD,stroke:#1565C0,stroke-width:2px,color:#0D47A1
-  style D1 fill:#BBDEFB,stroke:#1976D2,color:#000
-  style D2 fill:#BBDEFB,stroke:#1976D2,color:#000
-  style D3 fill:#BBDEFB,stroke:#1976D2,color:#000
-  style API fill:#FFCDD2,stroke:#C62828,color:#000
-  style JSON fill:#FFF9C4,stroke:#F9A825,color:#000
-  style STG fill:#E1BEE7,stroke:#7B1FA2,color:#000
-  style CORE fill:#D1C4E9,stroke:#512DA8,color:#000
-  style QA fill:#FFCCBC,stroke:#E64A19,color:#000
+  style ING fill:#4FC3F7,stroke:#0277BD,stroke-width:2px,color:#000
+  style LOAD fill:#FFF176,stroke:#F9A825,stroke-width:2px,color:#000
+  style TFM fill:#CE93D8,stroke:#7B1FA2,stroke-width:2px,color:#000
 ```
 
-**`produce_json`** — `get_playlist_id` → `get_video_ids` → `extracted_video_data` → `save_to_json` → trigger warehouse DAG.
+**Ingestion** — fetch playlist and video stats from the API; write `youtube_data_YYYY-MM-DD.json`.
 
-**`update_db`** — read JSON, upsert **staging**, transform and load **core** → trigger quality DAG.
+**Load** — read JSON; upsert rows into `staging.youtube_elt`.
 
-**`data_quality`** — `soda_test_staging` then `soda_test_core` using `include/soda/checks.yml`.
+**Transform** — apply business rules; load `core.youtube_elt`. Soda then validates both schemas.
 
 ---
 
